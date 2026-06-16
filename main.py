@@ -47,8 +47,6 @@ class ShelfBridgeAction(InterfaceAction):
         menu = self.qaction.menu()
         self.create_menu_action(menu, 'config_action', 'Configure Services…',
                                 triggered=self.show_config)
-        self.create_menu_action(menu, 'agent_export', 'Smart Export (Agent)…',
-                                triggered=self.show_agent_dialog)
 
         self._auto_thread = None
         self._trigger = ShelfBridgeTrigger(self.gui, parent=self.gui)
@@ -70,11 +68,6 @@ class ShelfBridgeAction(InterfaceAction):
         result = d.exec_() if hasattr(d, "exec_") else d.exec()
         if result:
             self.apply_settings()
-
-    def show_agent_dialog(self):
-        from calibre_plugins.shelf_bridge.ui.agent_dialog import AgentDialog
-        d = AgentDialog(self.gui)
-        d.exec_() if hasattr(d, "exec_") else d.exec()
 
     # ── Automation ───────────────────────────────────────────────────────
     def _on_auto_export(self, reason):

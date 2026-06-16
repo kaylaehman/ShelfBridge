@@ -31,7 +31,6 @@ SECRET_KEYS = frozenset({
     "notion_token",
     "airtable_token",
     "hardcover_token",
-    "agent_api_key",
     "onedrive_token",   # dict blob -> JSON-encoded in the keychain
 })
 

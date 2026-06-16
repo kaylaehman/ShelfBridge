@@ -17,8 +17,6 @@ OneDrive (CSV upload via Microsoft Graph).
 - **OneDrive** — uploads the CSV via Microsoft Graph (device-code OAuth, no
   client secret needed).
 - **Automation** — export when your library changes, or on a schedule.
-- **Smart Export (agent)** — an optional in-process agent that validates,
-  tests, and runs exports for you.
 
 ## Security
 

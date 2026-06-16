@@ -1,7 +1,7 @@
 """Plugin preferences (JSONConfig wrapper) + all defaults.
 
-NOTE on credentials: sensitive values (API tokens, OAuth token blobs, agent API
-key) are NOT stored here in plain text. They live in the OS credential store via
+NOTE on credentials: sensitive values (API tokens, OAuth token blobs) are NOT
+stored here in plain text. They live in the OS credential store via
 ``auth.credential_store``. The keys still appear in ``defaults`` (as empty
 placeholders) so the rest of the code can treat them uniformly; the runtime
 overlays the real secret from the credential store when constructing adapters.
@@ -48,15 +48,6 @@ prefs.defaults = {
     "schedule_interval_minutes": 60,        # 15 / 30 / 60 / 360 / 1440
     "notify_on_auto_export": True,
     "enabled_services": [],                 # services included in headless export
-
-    # ── Agent / Ruflo ─────────────────────────────────────────────────────
-    "agent_backend": "anthropic",           # "anthropic" | "ollama"
-    "agent_model": "claude-sonnet-4-6",
-    "agent_api_key": "",                    # secret -> credential_store; blank uses env
-    "agent_ollama_url": "http://localhost:11434",
-    "agent_ollama_model": "llama3",
-    "agent_max_iterations": 10,
-    "agent_enabled": False,                 # master switch; hides agent UI if False
 
     # ── Internal bookkeeping ──────────────────────────────────────────────
     "_last_export_summary": {},             # scrubbed summary of most recent export

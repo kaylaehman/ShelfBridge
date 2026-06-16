@@ -2,9 +2,8 @@
 
 Calibre injects a ``calibre_plugins.<name>`` package at runtime and provides the
 ``calibre.*`` modules. Outside Calibre we stub the minimum surface the pure-logic
-modules import at load time, alias ``calibre_plugins.shelf_bridge`` to the repo
-root, and stub ``ruflo`` so the agent tests import cleanly without the vendored
-package present.
+modules import at load time and alias ``calibre_plugins.shelf_bridge`` to the
+repo root.
 """
 import sys
 import types
@@ -83,43 +82,6 @@ def _install_calibre_stubs():
     calibre.customize = customize
 
 
-def _install_ruflo_stub():
-    if "ruflo" in sys.modules:
-        return
-    ruflo = _ensure_module("ruflo")
-
-    class ToolError(Exception):
-        pass
-
-    def ruflo_tool(namespace=None, **kw):
-        def decorator(fn):
-            fn._ruflo_namespace = namespace
-            return fn
-        return decorator
-
-    class RufloConfig:  # pragma: no cover - runtime-only
-        def __init__(self, **kw):
-            self.__dict__.update(kw)
-
-    class RufloAgent:  # pragma: no cover - runtime-only
-        def __init__(self, **kw):
-            self.__dict__.update(kw)
-
-        def on_step(self, cb):
-            pass
-
-        def run(self, task_input):
-            class _R:
-                def to_dict(self_inner):
-                    return {}
-            return _R()
-
-    ruflo.ToolError = ToolError
-    ruflo.ruflo_tool = ruflo_tool
-    ruflo.RufloConfig = RufloConfig
-    ruflo.RufloAgent = RufloAgent
-
-
 def _install_package_alias():
     cp = _ensure_module("calibre_plugins")
     pkg_name = "calibre_plugins.shelf_bridge"
@@ -132,5 +94,4 @@ def _install_package_alias():
 
 
 _install_calibre_stubs()
-_install_ruflo_stub()
 _install_package_alias()
