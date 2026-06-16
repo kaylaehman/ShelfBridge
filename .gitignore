@@ -1,0 +1,23 @@
+# Local-only spec/planning docs (RULES.md: never commit non-README .md).
+# NOTE: docs/banner.png is intentionally NOT ignored — the README renders it.
+CLAUDE.md
+AGENTS.md
+RULES.md
+docs/superpowers/
+.remember/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Vendored deps (ruflo, httpx, keyring, etc.)
+vendor/
+
+# Build artifacts
+*.zip
+
+# Ruflo / agent tooling artifacts (not part of the plugin)
+*.db
+ruvector.db
