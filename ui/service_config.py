@@ -84,50 +84,6 @@ class GoodreadsPanel(_BasePanel):
         prefs["storygraph_output_path"] = self.sg_path.text().strip()
 
 
-class NotionPanel(_BasePanel):
-    service_id = "notion"
-    title = "Notion"
-
-    def build(self):
-        self.token = self._password_field()
-        self.db_id = QLineEdit()
-        self.form.addRow("Integration token:", self.token)
-        self.form.addRow("Database ID:", self.db_id)
-        self.form.addRow("", self._test_button())
-
-    def load(self):
-        self.token.setText(credential_store.get_secret("notion_token", prefs) or "")
-        self.db_id.setText(prefs.get("notion_database_id", ""))
-
-    def save(self):
-        credential_store.set_secret("notion_token", self.token.text().strip(), prefs)
-        prefs["notion_database_id"] = self.db_id.text().strip()
-
-
-class AirtablePanel(_BasePanel):
-    service_id = "airtable"
-    title = "Airtable"
-
-    def build(self):
-        self.token = self._password_field()
-        self.base_id = QLineEdit()
-        self.table = QLineEdit()
-        self.form.addRow("Personal Access Token:", self.token)
-        self.form.addRow("Base ID:", self.base_id)
-        self.form.addRow("Table name:", self.table)
-        self.form.addRow("", self._test_button())
-
-    def load(self):
-        self.token.setText(credential_store.get_secret("airtable_token", prefs) or "")
-        self.base_id.setText(prefs.get("airtable_base_id", ""))
-        self.table.setText(prefs.get("airtable_table_name", "Books"))
-
-    def save(self):
-        credential_store.set_secret("airtable_token", self.token.text().strip(), prefs)
-        prefs["airtable_base_id"] = self.base_id.text().strip()
-        prefs["airtable_table_name"] = self.table.text().strip() or "Books"
-
-
 class HardcoverPanel(_BasePanel):
     service_id = "hardcover"
     title = "Hardcover"
@@ -193,4 +149,4 @@ class OneDrivePanel(_BasePanel):
         self._refresh_status()
 
 
-ALL_PANELS = [GoodreadsPanel, NotionPanel, AirtablePanel, HardcoverPanel, OneDrivePanel]
+ALL_PANELS = [GoodreadsPanel, HardcoverPanel, OneDrivePanel]

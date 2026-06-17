@@ -85,66 +85,6 @@ def test_storygraph_uses_distinct_path_key():
     assert result.success and result.records_exported == len(FIXTURES)
 
 
-# ── Notion adapter (upsert) ──────────────────────────────────────────────────
-
-def test_notion_validate_prefs():
-    from calibre_plugins.shelf_bridge.adapters.notion import NotionAdapter
-    errs = NotionAdapter({}).validate_prefs()
-    assert any("token" in e for e in errs)
-    assert any("database ID" in e for e in errs)
-
-
-def test_notion_build_properties_omits_null_rating():
-    from calibre_plugins.shelf_bridge.adapters.notion import NotionAdapter
-    a = NotionAdapter({})
-    rated = a._build_properties({"calibre_id": 1, "title": "x", "rating": 10})
-    assert rated["Rating"]["number"] == 5
-    assert rated["Calibre ID"]["number"] == 1
-    unrated = a._build_properties({"calibre_id": 2, "title": "y", "rating": None})
-    assert "Rating" not in unrated  # Notion rejects {"number": None}
-
-
-def test_notion_upsert_patches_existing_creates_new():
-    """Stub the _request seam: book 1 exists (PATCH), book 2 is new (POST)."""
-    from calibre_plugins.shelf_bridge.adapters.notion import NotionAdapter
-    calls = []
-
-    class StubNotion(NotionAdapter):
-        def _request(self, method, url, payload=None):
-            calls.append((method, url))
-            if url.endswith("/query"):
-                cid = payload["filter"]["number"]["equals"]
-                return {"results": [{"id": "existing-page"}]} if cid == 1 else {"results": []}
-            return {"id": "new-page"}
-
-    adapter = StubNotion({"notion_database_id": "db1", "notion_token": "t"})
-    books = [
-        {"calibre_id": 1, "title": "A", "authors": [], "tags": []},
-        {"calibre_id": 2, "title": "B", "authors": [], "tags": []},
-    ]
-    result = adapter.export(books, {})
-    assert result.success and result.records_exported == 2
-    methods = [m for m, _ in calls]
-    assert "PATCH" in methods  # existing page updated
-    assert "POST" in methods   # new page created
-
-
-# ── Airtable adapter ─────────────────────────────────────────────────────────
-
-def test_airtable_validate_prefs():
-    from calibre_plugins.shelf_bridge.adapters.airtable import AirtableAdapter
-    errs = AirtableAdapter({}).validate_prefs()
-    assert any("Token" in e for e in errs)
-    assert any("Base ID" in e for e in errs)
-
-
-def test_airtable_fields_include_calibre_id():
-    from calibre_plugins.shelf_bridge.adapters.airtable import AirtableAdapter
-    fields = AirtableAdapter({})._fields({"calibre_id": 7, "title": "x", "rating": 6})
-    assert fields["Calibre ID"] == 7
-    assert fields["Rating"] == 3
-
-
 # ── Hardcover adapter ────────────────────────────────────────────────────────
 
 def test_hardcover_skips_books_without_isbn():

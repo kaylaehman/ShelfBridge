@@ -20,15 +20,6 @@ prefs.defaults = {
     "goodreads_output_path": "",
     "storygraph_output_path": "",   # distinct file from Goodreads (review M5)
 
-    # ── Notion ────────────────────────────────────────────────────────────
-    "notion_token": "",             # secret -> credential_store
-    "notion_database_id": "",
-
-    # ── Airtable ──────────────────────────────────────────────────────────
-    "airtable_token": "",           # secret -> credential_store
-    "airtable_base_id": "",
-    "airtable_table_name": "Books",
-
     # ── Hardcover ─────────────────────────────────────────────────────────
     "hardcover_token": "",          # secret -> credential_store
 

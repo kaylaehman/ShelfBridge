@@ -11,7 +11,7 @@ the user is told their tokens are not encrypted.
 
 Adapters never call this directly. The runtime calls :func:`with_secrets` when
 constructing an adapter so the adapter sees the resolved secret under the same
-pref key it already expects (e.g. ``self.prefs["notion_token"]``).
+pref key it already expects (e.g. ``self.prefs["hardcover_token"]``).
 """
 import json
 
@@ -28,8 +28,6 @@ _SERVICE = "calibre-shelf-bridge"
 
 # Keys whose values are secrets and must be kept out of the plain prefs file.
 SECRET_KEYS = frozenset({
-    "notion_token",
-    "airtable_token",
     "hardcover_token",
     "onedrive_token",   # dict blob -> JSON-encoded in the keychain
 })
@@ -141,8 +139,8 @@ def delete_secret(key, prefs=None):
 def with_secrets(prefs):
     """Return a plain dict view of ``prefs`` with secret keys resolved.
 
-    Adapters receive this so they can read ``self.prefs["notion_token"]`` exactly
-    as the spec describes while the actual storage is the OS keychain. Falls back
+    Adapters receive this so they can read ``self.prefs["hardcover_token"]``
+    exactly as before while the actual storage is the OS keychain. Falls back
     to whatever is already in ``prefs`` for keys with no stored secret.
     """
     merged = dict(prefs)

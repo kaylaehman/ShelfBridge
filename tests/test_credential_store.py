@@ -16,9 +16,9 @@ def _store_with_fallback():
 def test_set_and_get_secret_fallback():
     cs = _store_with_fallback()
     prefs = {}
-    cs.set_secret("notion_token", "secret-abc", prefs)
-    assert prefs["notion_token"] == "secret-abc"
-    assert cs.get_secret("notion_token", prefs) == "secret-abc"
+    cs.set_secret("hardcover_token", "secret-abc", prefs)
+    assert prefs["hardcover_token"] == "secret-abc"
+    assert cs.get_secret("hardcover_token", prefs) == "secret-abc"
 
 
 def test_json_blob_roundtrip_fallback():
@@ -37,16 +37,16 @@ def test_missing_secret_returns_empty():
 
 def test_with_secrets_overlays_resolved_values():
     cs = _store_with_fallback()
-    prefs = {"notion_token": "", "notion_database_id": "db1"}
-    cs.set_secret("notion_token", "tok", prefs)
+    prefs = {"hardcover_token": "", "onedrive_client_id": "cid"}
+    cs.set_secret("hardcover_token", "tok", prefs)
     merged = cs.with_secrets(prefs)
-    assert merged["notion_token"] == "tok"
-    assert merged["notion_database_id"] == "db1"
+    assert merged["hardcover_token"] == "tok"
+    assert merged["onedrive_client_id"] == "cid"  # non-secret passes through
 
 
 def test_delete_secret_fallback():
     cs = _store_with_fallback()
     prefs = {}
-    cs.set_secret("airtable_token", "x", prefs)
-    cs.delete_secret("airtable_token", prefs)
-    assert "airtable_token" not in prefs
+    cs.set_secret("hardcover_token", "x", prefs)
+    cs.delete_secret("hardcover_token", prefs)
+    assert "hardcover_token" not in prefs

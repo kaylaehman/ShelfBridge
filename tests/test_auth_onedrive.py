@@ -45,14 +45,14 @@ def test_onedrive_path_must_be_csv():
 
 # ── Registry ─────────────────────────────────────────────────────────────────
 
-def test_registry_resolves_all_six():
+def test_registry_resolves_all_services():
     _force_fallback()
     from calibre_plugins.shelf_bridge.adapters import get_adapter, list_adapters
-    ids = ["goodreads", "storygraph", "notion", "airtable", "hardcover", "onedrive"]
+    ids = ["goodreads", "storygraph", "hardcover", "onedrive"]
     for sid in ids:
         adapter = get_adapter(sid, {})
         assert adapter.service_id == sid
-    assert len(list_adapters()) == 6
+    assert len(list_adapters()) == len(ids)
 
 
 def test_registry_unknown_service_raises():

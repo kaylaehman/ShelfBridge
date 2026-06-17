@@ -124,42 +124,39 @@ def test_end_to_end_field_map_renames_before_adapter():
     out.unlink(missing_ok=True)
 
 
-def test_end_to_end_notion_upsert_via_runner():
-    """Drive Notion through run_export_headless with a stubbed network seam."""
+def test_end_to_end_hardcover_via_runner():
+    """Drive Hardcover through run_export_headless with a stubbed network seam."""
     er = _runner_force_fallback()
     adapters_mod = importlib.import_module("calibre_plugins.shelf_bridge.adapters")
-    from calibre_plugins.shelf_bridge.adapters.notion import NotionAdapter
+    from calibre_plugins.shelf_bridge.adapters.hardcover import HardcoverAdapter
 
-    calls = {"PATCH": 0, "POST": 0}
+    calls = {"n": 0}
 
-    class StubNotion(NotionAdapter):
-        def _request(self, method, url, payload=None):
-            if url.endswith("/query"):
-                cid = payload["filter"]["number"]["equals"]
-                return {"results": [{"id": "p"}]} if cid == 1 else {"results": []}
-            if method in calls:
-                calls[method] += 1
-            return {"id": "x"}
+    class StubHardcover(HardcoverAdapter):
+        def _gql(self, query, variables):
+            calls["n"] += 1
+            return {"data": {"add_book_by_isbn": {"id": calls["n"]}}}
 
-    orig = adapters_mod._BY_ID["notion"]
-    adapters_mod._BY_ID["notion"] = StubNotion
+    orig = adapters_mod._BY_ID["hardcover"]
+    adapters_mod._BY_ID["hardcover"] = StubHardcover
     try:
         er.prefs.clear()
         er.prefs.update({
             "export_all": True,
-            "enabled_services": ["notion"],
+            "enabled_services": ["hardcover"],
             "field_maps": {},
-            "notion_token": "tok",
-            "notion_database_id": "db1",
+            "hardcover_token": "tok",
         })
         summary = er.run_export_headless(MockDb(), reason="itest")
     finally:
-        adapters_mod._BY_ID["notion"] = orig
+        adapters_mod._BY_ID["hardcover"] = orig
 
-    assert summary["results"]["notion"]["success"] is True
-    assert summary["results"]["notion"]["records_exported"] == 3
-    assert calls["PATCH"] == 1   # book 1 existed -> updated
-    assert calls["POST"] == 2    # books 2,3 new -> created
+    res = summary["results"]["hardcover"]
+    # Only the two ISBN-bearing books reach the API; the ISBN-less draft is skipped.
+    assert res["records_exported"] == 2
+    assert calls["n"] == 2
+    assert res["success"] is False               # a skip is reported as an error
+    assert any("no isbn" in e.lower() for e in res["errors"])
 
 
 # ── Import-graph smoke test (non-Qt modules) ─────────────────────────────────
@@ -168,7 +165,7 @@ def test_all_non_qt_modules_import():
     mods = [
         "books", "prefs", "field_mapping",
         "adapters", "adapters.base", "adapters.csv_schema", "adapters.goodreads",
-        "adapters.storygraph", "adapters.notion", "adapters.airtable",
+        "adapters.storygraph", "adapters.http",
         "adapters.hardcover", "adapters.onedrive",
         "auth.credential_store", "auth.graph_token", "auth.oauth",
         "automation.export_runner", "automation.trigger",
