@@ -15,6 +15,7 @@ import urllib.error
 
 from calibre_plugins.shelf_bridge.adapters.base import BaseServiceAdapter, ExportResult
 from calibre_plugins.shelf_bridge.adapters.csv_schema import GOODREADS_COLUMNS, goodreads_row
+from calibre_plugins.shelf_bridge.adapters.http import request_with_retry
 from calibre_plugins.shelf_bridge.auth.graph_token import get_valid_token, AuthExpiredError
 
 GRAPH_BASE = "https://graph.microsoft.com/v1.0"
@@ -32,7 +33,7 @@ def _ssl_context():
 
 
 def _open(req):
-    return urllib.request.urlopen(req, context=_ssl_context())
+    return request_with_retry(lambda: urllib.request.urlopen(req, context=_ssl_context()))
 
 
 class OneDriveAdapter(BaseServiceAdapter):

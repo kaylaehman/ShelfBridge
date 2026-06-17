@@ -8,6 +8,7 @@ import urllib.request
 import urllib.error
 
 from calibre_plugins.shelf_bridge.adapters.base import BaseServiceAdapter, ExportResult
+from calibre_plugins.shelf_bridge.adapters.http import request_with_retry
 
 HARDCOVER_API = "https://api.hardcover.app/v1/graphql"
 
@@ -34,8 +35,12 @@ class HardcoverAdapter(BaseServiceAdapter):
             },
             method="POST",
         )
-        with urllib.request.urlopen(req) as r:
-            resp = json.loads(r.read())
+
+        def attempt():
+            with urllib.request.urlopen(req) as r:
+                return json.loads(r.read())
+
+        resp = request_with_retry(attempt)
         if resp.get("errors"):
             raise RuntimeError(resp["errors"])
         return resp
