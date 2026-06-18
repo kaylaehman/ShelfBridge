@@ -51,14 +51,14 @@ def _flaky_urlopen(calls, body=b"{}"):
     return fake
 
 
-def test_hardcover_gql_retries_on_429(monkeypatch):
-    import calibre_plugins.shelf_bridge.adapters.hardcover as mod
-    _instant_retry(monkeypatch, mod)
+def test_google_sheets_request_retries_on_429(monkeypatch):
+    import calibre_plugins.shelf_bridge.adapters.google_sheets as mod
+    _instant_retry(monkeypatch, mod)   # patch mod.request_with_retry to instant-sleep
     calls = {"n": 0}
     monkeypatch.setattr(mod.urllib.request, "urlopen",
-                        _flaky_urlopen(calls, body=b'{"data": {}}'))
-    adapter = mod.HardcoverAdapter({"hardcover_token": "t"})
-    assert adapter._gql("query {}", {}) == {"data": {}}
+                        _flaky_urlopen(calls, body=b'{"ok": true}'))
+    adapter = mod.GoogleSheetsAdapter({})
+    assert adapter._request("GET", "https://sheets/x", "tok") == {"ok": True}
     assert calls["n"] == 2
 
 

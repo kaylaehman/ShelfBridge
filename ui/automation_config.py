@@ -1,7 +1,8 @@
 """Automation tab widget — triggers, schedule, included services, Run Now."""
 from calibre_plugins.shelf_bridge.ui.qt import (
     QWidget, QVBoxLayout, QFormLayout, QCheckBox, QSpinBox, QComboBox,
-    QListWidget, QListWidgetItem, QPushButton, Qt,
+    QListWidget, QListWidgetItem, QPushButton,
+    Qt_UserRole, Qt_ItemIsUserCheckable, Qt_Checked, Qt_Unchecked,
 )
 from calibre_plugins.shelf_bridge.prefs import prefs
 from calibre_plugins.shelf_bridge.adapters import list_adapters
@@ -39,9 +40,9 @@ class AutomationPanel(QWidget):
         self.services = QListWidget()
         for cls in list_adapters():
             item = QListWidgetItem(cls.display_name)
-            item.setData(Qt.UserRole, cls.service_id)
-            item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
-            item.setCheckState(Qt.Unchecked)
+            item.setData(Qt_UserRole, cls.service_id)
+            item.setFlags(item.flags() | Qt_ItemIsUserCheckable)
+            item.setCheckState(Qt_Unchecked)
             self.services.addItem(item)
         form.addRow("Services to include:", self.services)
 
@@ -64,8 +65,8 @@ class AutomationPanel(QWidget):
         enabled = set(prefs.get("enabled_services", []))
         for i in range(self.services.count()):
             item = self.services.item(i)
-            checked = item.data(Qt.UserRole) in enabled
-            item.setCheckState(Qt.Checked if checked else Qt.Unchecked)
+            checked = item.data(Qt_UserRole) in enabled
+            item.setCheckState(Qt_Checked if checked else Qt_Unchecked)
 
     def save(self):
         prefs["auto_export_on_change"] = self.on_change.isChecked()
@@ -76,8 +77,8 @@ class AutomationPanel(QWidget):
         chosen = []
         for i in range(self.services.count()):
             item = self.services.item(i)
-            if item.checkState() == Qt.Checked:
-                chosen.append(item.data(Qt.UserRole))
+            if item.checkState() == Qt_Checked:
+                chosen.append(item.data(Qt_UserRole))
         prefs["enabled_services"] = chosen
 
     def _run_now(self):

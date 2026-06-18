@@ -124,39 +124,46 @@ def test_end_to_end_field_map_renames_before_adapter():
     out.unlink(missing_ok=True)
 
 
-def test_end_to_end_hardcover_via_runner():
-    """Drive Hardcover through run_export_headless with a stubbed network seam."""
+def test_end_to_end_google_sheets_via_runner(monkeypatch):
+    """Drive Google Sheets through run_export_headless with a stubbed network seam."""
     er = _runner_force_fallback()
     adapters_mod = importlib.import_module("calibre_plugins.shelf_bridge.adapters")
-    from calibre_plugins.shelf_bridge.adapters.hardcover import HardcoverAdapter
+    import calibre_plugins.shelf_bridge.adapters.google_sheets as gs
+    from calibre_plugins.shelf_bridge.adapters.google_sheets import GoogleSheetsAdapter
 
-    calls = {"n": 0}
+    monkeypatch.setattr(gs, "get_valid_token", lambda cid, cs, prefs: "tok")
+    calls = []
 
-    class StubHardcover(HardcoverAdapter):
-        def _gql(self, query, variables):
-            calls["n"] += 1
-            return {"data": {"add_book_by_isbn": {"id": calls["n"]}}}
+    class StubSheets(GoogleSheetsAdapter):
+        def _request(self, method, url, token, payload=None):
+            calls.append((method, payload))
+            return {}
 
-    orig = adapters_mod._BY_ID["hardcover"]
-    adapters_mod._BY_ID["hardcover"] = StubHardcover
+    orig = adapters_mod._BY_ID["google_sheets"]
+    adapters_mod._BY_ID["google_sheets"] = StubSheets
     try:
         er.prefs.clear()
         er.prefs.update({
             "export_all": True,
-            "enabled_services": ["hardcover"],
+            "enabled_services": ["google_sheets"],
             "field_maps": {},
-            "hardcover_token": "tok",
+            "google_client_id": "cid",
+            "google_client_secret": "sec",
+            "google_spreadsheet_id": "sheet123",
+            # authorized token so validate_prefs passes (keyring forced to fallback)
+            "google_token": {"access_token": "a", "refresh_token": "r", "expires_at": 9_999_999_999},
         })
         summary = er.run_export_headless(MockDb(), reason="itest")
     finally:
-        adapters_mod._BY_ID["hardcover"] = orig
+        adapters_mod._BY_ID["google_sheets"] = orig
 
-    res = summary["results"]["hardcover"]
-    # Only the two ISBN-bearing books reach the API; the ISBN-less draft is skipped.
-    assert res["records_exported"] == 2
-    assert calls["n"] == 2
-    assert res["success"] is False               # a skip is reported as an error
-    assert any("no isbn" in e.lower() for e in res["errors"])
+    res = summary["results"]["google_sheets"]
+    assert res["success"] is True
+    assert res["records_exported"] == 3
+    # clear (POST) then write (PUT); write payload carries header + 3 book rows.
+    assert [m for m, _ in calls] == ["POST", "PUT"]
+    write_payload = calls[1][1]
+    assert len(write_payload["values"]) == 4   # header + 3 books
 
 
 # ── Import-graph smoke test (non-Qt modules) ─────────────────────────────────
@@ -166,8 +173,8 @@ def test_all_non_qt_modules_import():
         "books", "prefs", "field_mapping",
         "adapters", "adapters.base", "adapters.csv_schema", "adapters.goodreads",
         "adapters.storygraph", "adapters.http",
-        "adapters.hardcover", "adapters.onedrive",
-        "auth.credential_store", "auth.graph_token", "auth.oauth",
+        "adapters.google_sheets", "adapters.onedrive",
+        "auth.credential_store", "auth.graph_token", "auth.google_token", "auth.oauth",
         "automation.export_runner", "automation.trigger",
     ]
     for m in mods:

@@ -11,7 +11,7 @@ the user is told their tokens are not encrypted.
 
 Adapters never call this directly. The runtime calls :func:`with_secrets` when
 constructing an adapter so the adapter sees the resolved secret under the same
-pref key it already expects (e.g. ``self.prefs["hardcover_token"]``).
+pref key it already expects (e.g. ``self.prefs["google_client_secret"]``).
 """
 import json
 
@@ -28,12 +28,13 @@ _SERVICE = "calibre-shelf-bridge"
 
 # Keys whose values are secrets and must be kept out of the plain prefs file.
 SECRET_KEYS = frozenset({
-    "hardcover_token",
+    "google_client_secret",
+    "google_token",     # dict blob -> JSON-encoded in the keychain
     "onedrive_token",   # dict blob -> JSON-encoded in the keychain
 })
 
 # Secrets that are stored as a JSON-encoded structure rather than a bare string.
-_JSON_KEYS = frozenset({"onedrive_token"})
+_JSON_KEYS = frozenset({"onedrive_token", "google_token"})
 
 _keyring = None
 _keyring_ok = None  # tri-state: None=unknown, True/False=probed
@@ -139,7 +140,7 @@ def delete_secret(key, prefs=None):
 def with_secrets(prefs):
     """Return a plain dict view of ``prefs`` with secret keys resolved.
 
-    Adapters receive this so they can read ``self.prefs["hardcover_token"]``
+    Adapters receive this so they can read ``self.prefs["google_client_secret"]``
     exactly as before while the actual storage is the OS keychain. Falls back
     to whatever is already in ``prefs`` for keys with no stored secret.
     """

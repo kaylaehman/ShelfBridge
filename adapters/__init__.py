@@ -2,16 +2,16 @@
 
 ``get_adapter(service_id, prefs)`` constructs an adapter whose prefs have secret
 keys resolved from the OS credential store (so adapters can read
-``self.prefs["hardcover_token"]`` while storage stays in the keychain).
+``self.prefs["notion_token"]``-style keys while storage stays in the keychain).
 ``list_adapters()`` returns the adapter classes for UI enumeration.
 """
 from calibre_plugins.shelf_bridge.adapters.goodreads import GoodreadsAdapter
 from calibre_plugins.shelf_bridge.adapters.storygraph import StoryGraphAdapter
-from calibre_plugins.shelf_bridge.adapters.hardcover import HardcoverAdapter
 from calibre_plugins.shelf_bridge.adapters.onedrive import OneDriveAdapter
+from calibre_plugins.shelf_bridge.adapters.google_sheets import GoogleSheetsAdapter
 
 _ADAPTERS = [
-    GoodreadsAdapter, StoryGraphAdapter, HardcoverAdapter, OneDriveAdapter,
+    GoodreadsAdapter, StoryGraphAdapter, OneDriveAdapter, GoogleSheetsAdapter,
 ]
 _BY_ID = {a.service_id: a for a in _ADAPTERS}
 

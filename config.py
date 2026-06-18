@@ -3,6 +3,7 @@ and Field Mapping. On accept, every panel writes to prefs / credential store.
 """
 from calibre_plugins.shelf_bridge.ui.qt import (
     QDialog, QVBoxLayout, QTabWidget, QDialogButtonBox,
+    QDialogButtonBox_Ok, QDialogButtonBox_Cancel,
 )
 from calibre_plugins.shelf_bridge.ui.service_config import ALL_PANELS
 from calibre_plugins.shelf_bridge.ui.automation_config import AutomationPanel
@@ -34,7 +35,7 @@ class ConfigDialog(QDialog):
         self.tabs.addTab(self.mapping, "Field Mapping")
         self._panels.append(self.mapping)
 
-        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        buttons = QDialogButtonBox(QDialogButtonBox_Ok | QDialogButtonBox_Cancel)
         buttons.accepted.connect(self._on_accept)
         buttons.rejected.connect(self.reject)
         layout.addWidget(buttons)

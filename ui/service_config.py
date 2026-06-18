@@ -84,20 +84,62 @@ class GoodreadsPanel(_BasePanel):
         prefs["storygraph_output_path"] = self.sg_path.text().strip()
 
 
-class HardcoverPanel(_BasePanel):
-    service_id = "hardcover"
-    title = "Hardcover"
+class GoogleSheetsPanel(_BasePanel):
+    service_id = "google_sheets"
+    title = "Google Sheets"
 
     def build(self):
-        self.token = self._password_field()
-        self.form.addRow("API token:", self.token)
-        self.form.addRow("", self._test_button())
+        self.client_id = QLineEdit()
+        self.client_secret = self._password_field()
+        self.spreadsheet_id = QLineEdit()
+        self.sheet_name = QLineEdit()
+        self.form.addRow("OAuth Client ID:", self.client_id)
+        self.form.addRow("OAuth Client Secret:", self.client_secret)
+        self.form.addRow("Spreadsheet ID:", self.spreadsheet_id)
+        self.form.addRow("Sheet/tab name:", self.sheet_name)
+        self.status = QLabel()
+        self.form.addRow("Status:", self.status)
+        row = QHBoxLayout()
+        self.auth_btn = QPushButton("Authorize")
+        self.auth_btn.clicked.connect(self._authorize)
+        row.addWidget(self.auth_btn)
+        revoke = QPushButton("Revoke")
+        revoke.clicked.connect(self._revoke)
+        row.addWidget(revoke)
+        row.addWidget(self._test_button())
+        holder = QWidget()
+        holder.setLayout(row)
+        self.form.addRow("", holder)
 
     def load(self):
-        self.token.setText(credential_store.get_secret("hardcover_token", prefs) or "")
+        self.client_id.setText(prefs.get("google_client_id", ""))
+        self.client_secret.setText(credential_store.get_secret("google_client_secret", prefs) or "")
+        self.spreadsheet_id.setText(prefs.get("google_spreadsheet_id", ""))
+        self.sheet_name.setText(prefs.get("google_sheet_name", "Books"))
+        self._refresh_status()
 
     def save(self):
-        credential_store.set_secret("hardcover_token", self.token.text().strip(), prefs)
+        prefs["google_client_id"] = self.client_id.text().strip()
+        credential_store.set_secret("google_client_secret", self.client_secret.text().strip(), prefs)
+        prefs["google_spreadsheet_id"] = self.spreadsheet_id.text().strip()
+        prefs["google_sheet_name"] = self.sheet_name.text().strip() or "Books"
+
+    def _refresh_status(self):
+        authorized = bool(credential_store.get_secret("google_token", prefs))
+        self.status.setText("Authorized" if authorized else "Not authorized")
+        self.auth_btn.setText("Re-Authorize" if authorized else "Authorize")
+
+    def _authorize(self):
+        self.save()
+        from calibre_plugins.shelf_bridge.ui.device_auth import run_google_device_auth
+        ok, msg = run_google_device_auth(
+            self, self.client_id.text().strip(), self.client_secret.text().strip())
+        (QMessageBox.information if ok else QMessageBox.warning)(self, "Google Sheets Authorization", msg)
+        self._refresh_status()
+
+    def _revoke(self):
+        credential_store.delete_secret("google_token", prefs)
+        self._refresh_status()
 
 
 class OneDrivePanel(_BasePanel):
@@ -149,4 +191,4 @@ class OneDrivePanel(_BasePanel):
         self._refresh_status()
 
 
-ALL_PANELS = [GoodreadsPanel, HardcoverPanel, OneDrivePanel]
+ALL_PANELS = [GoodreadsPanel, GoogleSheetsPanel, OneDrivePanel]

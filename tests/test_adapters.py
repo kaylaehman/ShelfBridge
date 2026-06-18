@@ -85,23 +85,50 @@ def test_storygraph_uses_distinct_path_key():
     assert result.success and result.records_exported == len(FIXTURES)
 
 
-# ── Hardcover adapter ────────────────────────────────────────────────────────
+# ── Google Sheets adapter ────────────────────────────────────────────────────
 
-def test_hardcover_skips_books_without_isbn():
-    from calibre_plugins.shelf_bridge.adapters.hardcover import HardcoverAdapter
+def test_google_sheets_validate_prefs():
+    import importlib
+    importlib.import_module(
+        "calibre_plugins.shelf_bridge.auth.credential_store")._keyring_ok = False
+    from calibre_plugins.shelf_bridge.adapters.google_sheets import GoogleSheetsAdapter
+    errs = GoogleSheetsAdapter({}).validate_prefs()
+    assert any("Client ID" in e for e in errs)
+    assert any("Client Secret" in e for e in errs)
+    assert any("Spreadsheet ID" in e for e in errs)
+    assert any("not authorized" in e for e in errs)
+
+
+def test_google_sheets_rows_header_and_values():
+    from calibre_plugins.shelf_bridge.adapters.google_sheets import GoogleSheetsAdapter
+    from calibre_plugins.shelf_bridge.adapters.csv_schema import GOODREADS_COLUMNS
+    rows = GoogleSheetsAdapter({})._rows([
+        {"calibre_id": 1, "title": "Dune", "authors": ["Herbert, Frank"], "rating": 8},
+    ])
+    assert rows[0] == list(GOODREADS_COLUMNS)         # header row
+    assert rows[1][0] == "Dune"                        # Title column value
+    assert len(rows[1]) == len(GOODREADS_COLUMNS)
+
+
+def test_google_sheets_clear_then_write(monkeypatch):
+    """Export clears the sheet then writes header+rows (idempotent)."""
+    from calibre_plugins.shelf_bridge.adapters.google_sheets import GoogleSheetsAdapter
+    import calibre_plugins.shelf_bridge.adapters.google_sheets as gs
+
+    monkeypatch.setattr(gs, "get_valid_token", lambda cid, cs, prefs: "tok")
     calls = []
 
-    class StubHC(HardcoverAdapter):
-        def _gql(self, query, variables):
-            calls.append(variables)
-            return {"data": {}}
+    class Stub(GoogleSheetsAdapter):
+        def _request(self, method, url, token, payload=None):
+            calls.append((method, url))
+            return {"properties": {"title": "My Sheet"}}
 
-    adapter = StubHC({"hardcover_token": "t"})
-    books = [
-        {"calibre_id": 1, "title": "Has ISBN", "isbn13": "9780441013593", "rating": 8},
-        {"calibre_id": 2, "title": "No ISBN", "isbn": None, "isbn13": None},
-    ]
-    result = adapter.export(books, {})
-    assert result.records_exported == 1
-    assert any("no isbn" in e.lower() for e in result.errors)
-    assert calls[0]["status"] == "read"
+    adapter = Stub({
+        "google_client_id": "cid", "google_client_secret": "sec",
+        "google_spreadsheet_id": "sheet123",
+    })
+    result = adapter.export([{"calibre_id": 1, "title": "Dune", "authors": []}], {})
+    assert result.success and result.records_exported == 1
+    methods = [m for m, _ in calls]
+    assert methods == ["POST", "PUT"]                  # clear, then write
+    assert any(":clear" in url for _, url in calls)

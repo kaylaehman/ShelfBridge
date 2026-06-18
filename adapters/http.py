@@ -1,6 +1,6 @@
 """Shared HTTP retry/backoff helper for the API adapters.
 
-All adapters that hit a rate-limited API (Hardcover, OneDrive) route their
+All adapters that hit a rate-limited API (OneDrive, Google Sheets) route their
 requests through :func:`request_with_retry` so the policy lives in one place.
 Policy:
 

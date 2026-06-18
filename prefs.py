@@ -20,8 +20,12 @@ prefs.defaults = {
     "goodreads_output_path": "",
     "storygraph_output_path": "",   # distinct file from Goodreads (review M5)
 
-    # ── Hardcover ─────────────────────────────────────────────────────────
-    "hardcover_token": "",          # secret -> credential_store
+    # ── Google Sheets ─────────────────────────────────────────────────────
+    "google_client_id": "",
+    "google_client_secret": "",     # secret -> credential_store
+    "google_spreadsheet_id": "",
+    "google_sheet_name": "Books",
+    "google_token": {},             # secret -> credential_store ({access,refresh,expires_at})
 
     # ── OneDrive ──────────────────────────────────────────────────────────
     "onedrive_client_id": "",

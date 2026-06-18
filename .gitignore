@@ -21,3 +21,7 @@ vendor/
 # Ruflo / agent tooling artifacts (not part of the plugin)
 *.db
 ruvector.db
+
+# Dev-only Calibre smoke scripts (not part of the plugin)
+smoke_test.py
+config_smoke.py

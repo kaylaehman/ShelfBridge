@@ -1,10 +1,13 @@
 """PyQt5 / PyQt6 compatibility shim.
 
-Calibre 6.x ships PyQt5, 7.x ships PyQt6 (which splits classes across QtWidgets /
-QtCore / QtGui). Importing from here gives the UI modules one stable surface and
-avoids repeating the try/except in every file.
+Calibre 6.x ships PyQt5, 7.x+ ships PyQt6. Critically, Calibre exposes a
+``PyQt5.Qt`` module even on PyQt6 builds, but the classes behind it are PyQt6 —
+where enum members are *scoped* (``QLineEdit.EchoMode.Password``) rather than
+flat (``QLineEdit.Password``). So importing the classes is not enough; every
+enum member must be resolved in a way that works under both. ``_scoped`` does
+that, and this module exports ready-to-use enum constants the UI imports.
 """
-try:  # PyQt5 (Calibre 6.x) — everything lives under PyQt5.Qt
+try:  # Calibre exposes PyQt5.Qt (classes may actually be PyQt6)
     from PyQt5.Qt import (  # noqa: F401
         Qt, QApplication, QDialog, QWidget, QTabWidget,
         QVBoxLayout, QHBoxLayout, QFormLayout, QGridLayout,
@@ -13,8 +16,7 @@ try:  # PyQt5 (Calibre 6.x) — everything lives under PyQt5.Qt
         QFileDialog, QMessageBox, QTableWidget, QTableWidgetItem,
         QDialogButtonBox, QGroupBox, QThread, pyqtSignal,
     )
-    QLineEdit_Password = QLineEdit.Password
-except ImportError:  # PyQt6 (Calibre 7.x)
+except ImportError:  # pure PyQt6
     from PyQt6.QtCore import Qt, QThread, pyqtSignal  # noqa: F401
     from PyQt6.QtWidgets import (  # noqa: F401
         QApplication, QDialog, QWidget, QTabWidget,
@@ -24,4 +26,22 @@ except ImportError:  # PyQt6 (Calibre 7.x)
         QFileDialog, QMessageBox, QTableWidget, QTableWidgetItem,
         QDialogButtonBox, QGroupBox,
     )
-    QLineEdit_Password = QLineEdit.EchoMode.Password
+
+
+def _scoped(base, scope, name):
+    """Resolve an enum member that may be scoped (PyQt6) or flat (PyQt5)."""
+    holder = getattr(base, scope, None)
+    if holder is not None and hasattr(holder, name):
+        return getattr(holder, name)
+    return getattr(base, name)
+
+
+# Enum constants used by the UI — work under both PyQt5 and PyQt6.
+QLineEdit_Password = _scoped(QLineEdit, "EchoMode", "Password")
+Qt_UserRole = _scoped(Qt, "ItemDataRole", "UserRole")
+Qt_ItemIsUserCheckable = _scoped(Qt, "ItemFlag", "ItemIsUserCheckable")
+Qt_Checked = _scoped(Qt, "CheckState", "Checked")
+Qt_Unchecked = _scoped(Qt, "CheckState", "Unchecked")
+Qt_TextSelectableByMouse = _scoped(Qt, "TextInteractionFlag", "TextSelectableByMouse")
+QDialogButtonBox_Ok = _scoped(QDialogButtonBox, "StandardButton", "Ok")
+QDialogButtonBox_Cancel = _scoped(QDialogButtonBox, "StandardButton", "Cancel")

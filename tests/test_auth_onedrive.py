@@ -48,7 +48,7 @@ def test_onedrive_path_must_be_csv():
 def test_registry_resolves_all_services():
     _force_fallback()
     from calibre_plugins.shelf_bridge.adapters import get_adapter, list_adapters
-    ids = ["goodreads", "storygraph", "hardcover", "onedrive"]
+    ids = ["goodreads", "storygraph", "onedrive", "google_sheets"]
     for sid in ids:
         adapter = get_adapter(sid, {})
         assert adapter.service_id == sid
