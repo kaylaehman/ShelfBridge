@@ -5,30 +5,34 @@
 # ShelfBridge
 
 A [Calibre](https://calibre-ebook.com/) desktop plugin that exports your book
-catalog to reading-tracker and productivity services — a Goodreads /
-StoryGraph CSV, the [Hardcover](https://hardcover.app/) API, or a CSV uploaded
-to Microsoft OneDrive.
+catalog to reading-tracker and productivity services — a Goodreads / StoryGraph
+CSV, a Google Sheet, or a CSV uploaded to Microsoft OneDrive.
 
 ## Supported services
 
 | Service | What it does | Setup needed |
 | --- | --- | --- |
 | **Goodreads / StoryGraph** | Writes a CSV in the Goodreads import schema (StoryGraph accepts the same file) | An output folder |
-| **OneDrive** | Builds the same CSV and uploads it to your OneDrive via Microsoft Graph | A free Microsoft app registration (see below) |
-| **Hardcover** | Adds each book to your Hardcover library by ISBN, as *Read* or *Want to read* | A Hardcover API token |
+| **Google Sheets** | Writes your catalog as rows into a Google Sheet you own | A free Google Cloud OAuth client (see below) |
+| **OneDrive** | Builds the Goodreads CSV and uploads it to your OneDrive via Microsoft Graph | A free Microsoft app registration (see below) |
 
 > Books are marked **Read** when they have a rating or a `#read_date`, otherwise
-> **To read** / **Want to read**.
+> **To read**.
 
 ## Features
 
 - **CSV export** in the Goodreads / StoryGraph schema, written UTF-8 with a BOM
   so it opens cleanly in Excel.
-- **OneDrive upload** over Microsoft Graph using device-code OAuth — no client
-  secret, works behind firewalls.
+- **Google Sheets** export over the Sheets API. Re-exports are **idempotent** —
+  the sheet is cleared and rewritten, so scheduled exports never pile up
+  duplicates.
+- **OneDrive upload** over Microsoft Graph using device-code OAuth — works
+  behind firewalls.
 - **Resilient API calls** — requests retry automatically with backoff and honor
   rate-limit `Retry-After` headers, so large libraries export without manual
   retries.
+- **Secure credentials** — tokens live in your OS keychain, not a plain-text
+  file (see [Security](#security)).
 - **Automation** — export automatically when your library changes, or on a
   schedule (every 15 min through daily).
 
@@ -64,6 +68,45 @@ On the **Automation** tab you can:
 - **Export on a schedule** — every 15 / 30 / 60 / 360 minutes, or daily.
 - Choose which services are included, and whether to show a notification after
   each automatic export.
+
+## Setting up Google Sheets
+
+Google Sheets export uses your own free Google Cloud OAuth client. You only do
+this once.
+
+### 1. Create a project and enable the Sheets API
+
+1. Open the [Google Cloud Console](https://console.cloud.google.com/) and create
+   (or pick) a project.
+2. Go to **APIs & Services → Library**, search for **Google Sheets API**, and
+   click **Enable**.
+
+### 2. Configure the OAuth consent screen
+
+1. **APIs & Services → OAuth consent screen.** Choose **External**.
+2. Fill in the required app name and your email, and add yourself under
+   **Test users**.
+3. Add the scope `https://www.googleapis.com/auth/spreadsheets`.
+
+### 3. Create an OAuth client for the device flow
+
+1. **APIs & Services → Credentials → Create credentials → OAuth client ID.**
+2. For **Application type**, choose **TV and Limited Input device** — this is
+   required for the device-code flow ShelfBridge uses.
+3. Copy the **Client ID** and **Client secret**.
+
+### 4. Connect it in ShelfBridge
+
+1. Create (or open) the Google Sheet you want to export into and copy its
+   **Spreadsheet ID** from the URL —
+   `docs.google.com/spreadsheets/d/`**`<this part>`**`/edit`.
+2. In ShelfBridge's **Google Sheets** tab, paste the **Client ID**,
+   **Client Secret**, and **Spreadsheet ID**, and set a **Sheet/tab name**
+   (default `Books`).
+3. Click **Authorize**, then open [google.com/device](https://www.google.com/device)
+   and enter the code shown. Once it says **Authorized**, you're done.
+
+Use **Test Connection** to confirm, or **Revoke** to disconnect.
 
 ## Setting up OneDrive
 
@@ -108,15 +151,6 @@ this once.
    code shown. Once it says **Authorized**, you're done.
 
 Use **Test Connection** to confirm, or **Revoke** to disconnect.
-
-## Setting up Hardcover
-
-1. Sign in at [hardcover.app](https://hardcover.app/) and copy your API token
-   from your account settings.
-2. Paste it into ShelfBridge's **Hardcover** tab and click **Test Connection**.
-
-Books are matched by ISBN-13 (falling back to ISBN-10); titles without an ISBN
-are skipped and reported.
 
 ## Security
 
