@@ -10,11 +10,7 @@ from calibre.gui2.actions import InterfaceAction
 from calibre_plugins.shelf_bridge.prefs import prefs
 from calibre_plugins.shelf_bridge.automation.trigger import ShelfBridgeTrigger
 from calibre_plugins.shelf_bridge.automation.export_runner import run_export_headless
-
-try:
-    from PyQt5.Qt import QThread, pyqtSignal
-except ImportError:  # pragma: no cover
-    from PyQt6.QtCore import QThread, pyqtSignal
+from calibre_plugins.shelf_bridge.ui.qt import QMenu, QThread, pyqtSignal
 
 
 class _AutoExportThread(QThread):
@@ -44,8 +40,14 @@ class ShelfBridgeAction(InterfaceAction):
         self.qaction.setIcon(icon)
         self.qaction.triggered.connect(self.show_export_dialog)
 
-        menu = self.qaction.menu()
-        self.create_menu_action(menu, 'config_action', 'Configure Services…',
+        # A fresh InterfaceAction qaction has no menu; create one so the toolbar
+        # button's dropdown exposes Export + Configure. (Without this,
+        # qaction.menu() is None and create_menu_action would fail.)
+        self.menu = QMenu(self.gui)
+        self.qaction.setMenu(self.menu)
+        self.create_menu_action(self.menu, 'shelf_bridge_export', 'Export Catalog…',
+                                triggered=self.show_export_dialog)
+        self.create_menu_action(self.menu, 'shelf_bridge_config', 'Configure Services…',
                                 triggered=self.show_config)
 
         self._auto_thread = None
@@ -68,6 +70,20 @@ class ShelfBridgeAction(InterfaceAction):
         result = d.exec_() if hasattr(d, "exec_") else d.exec()
         if result:
             self.apply_settings()
+
+    # ── Preferences → Plugins → Customize plugin ─────────────────────────
+    # InterfaceActionBase delegates these to the InterfaceAction, so defining
+    # them here makes the "Customize plugin" button open ShelfBridge's settings.
+    def is_customizable(self):
+        return True
+
+    def config_widget(self):
+        from calibre_plugins.shelf_bridge.config import ConfigWidget
+        return ConfigWidget(self.gui)
+
+    def save_settings(self, config_widget):
+        config_widget.save_settings()
+        self.apply_settings()
 
     # ── Automation ───────────────────────────────────────────────────────
     def _on_auto_export(self, reason):

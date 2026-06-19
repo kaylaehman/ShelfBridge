@@ -1,8 +1,11 @@
-"""Preferences dialog — a QTabWidget with one tab per service plus Automation
-and Field Mapping. On accept, every panel writes to prefs / credential store.
+"""Config UI.
+
+``ConfigWidget`` is the tabbed configuration body, reusable both as Calibre's
+"Customize plugin" widget (Preferences → Plugins) and inside ``ConfigDialog``,
+the modal opened from the toolbar's "Configure Services…" menu item.
 """
 from calibre_plugins.shelf_bridge.ui.qt import (
-    QDialog, QVBoxLayout, QTabWidget, QDialogButtonBox,
+    QWidget, QDialog, QVBoxLayout, QTabWidget, QDialogButtonBox,
     QDialogButtonBox_Ok, QDialogButtonBox_Cancel,
 )
 from calibre_plugins.shelf_bridge.ui.service_config import ALL_PANELS
@@ -10,14 +13,14 @@ from calibre_plugins.shelf_bridge.ui.automation_config import AutomationPanel
 from calibre_plugins.shelf_bridge.ui.field_mapping import FieldMappingPanel
 
 
-class ConfigDialog(QDialog):
-    def __init__(self, gui, action_spec=None, parent=None):
-        super().__init__(parent or gui)
-        self.gui = gui
-        self.setWindowTitle("ShelfBridge — Configure Services")
-        self.resize(560, 480)
-        layout = QVBoxLayout(self)
+class ConfigWidget(QWidget):
+    """The tabbed configuration body. Call :meth:`save_settings` to persist."""
 
+    def __init__(self, gui=None, parent=None):
+        super().__init__(parent)
+        self.gui = gui
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
         self.tabs = QTabWidget()
         layout.addWidget(self.tabs)
 
@@ -35,13 +38,30 @@ class ConfigDialog(QDialog):
         self.tabs.addTab(self.mapping, "Field Mapping")
         self._panels.append(self.mapping)
 
+    def save_settings(self):
+        for panel in self._panels:
+            if hasattr(panel, "save"):
+                panel.save()
+
+
+class ConfigDialog(QDialog):
+    """Modal wrapper used by the toolbar 'Configure Services…' menu item."""
+
+    def __init__(self, gui, action_spec=None, parent=None):
+        super().__init__(parent or gui)
+        self.gui = gui
+        self.setWindowTitle("ShelfBridge — Configure Services")
+        self.resize(560, 480)
+        layout = QVBoxLayout(self)
+
+        self.widget = ConfigWidget(gui, self)
+        layout.addWidget(self.widget)
+
         buttons = QDialogButtonBox(QDialogButtonBox_Ok | QDialogButtonBox_Cancel)
         buttons.accepted.connect(self._on_accept)
         buttons.rejected.connect(self.reject)
         layout.addWidget(buttons)
 
     def _on_accept(self):
-        for panel in self._panels:
-            if hasattr(panel, "save"):
-                panel.save()
+        self.widget.save_settings()
         self.accept()

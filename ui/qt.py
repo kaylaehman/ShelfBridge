@@ -14,7 +14,7 @@ try:  # Calibre exposes PyQt5.Qt (classes may actually be PyQt6)
         QLabel, QPushButton, QLineEdit, QCheckBox, QSpinBox, QComboBox,
         QListWidget, QListWidgetItem, QTextEdit, QPlainTextEdit,
         QFileDialog, QMessageBox, QTableWidget, QTableWidgetItem,
-        QDialogButtonBox, QGroupBox, QThread, pyqtSignal,
+        QDialogButtonBox, QGroupBox, QMenu, QThread, pyqtSignal,
     )
 except ImportError:  # pure PyQt6
     from PyQt6.QtCore import Qt, QThread, pyqtSignal  # noqa: F401
@@ -24,7 +24,7 @@ except ImportError:  # pure PyQt6
         QLabel, QPushButton, QLineEdit, QCheckBox, QSpinBox, QComboBox,
         QListWidget, QListWidgetItem, QTextEdit, QPlainTextEdit,
         QFileDialog, QMessageBox, QTableWidget, QTableWidgetItem,
-        QDialogButtonBox, QGroupBox,
+        QDialogButtonBox, QGroupBox, QMenu,
     )
 
 

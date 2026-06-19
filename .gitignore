@@ -27,3 +27,5 @@ ruvector.db
 smoke_test.py
 config_smoke.py
 config_shot.py
+config_entry_smoke.py
+probe_api.py
