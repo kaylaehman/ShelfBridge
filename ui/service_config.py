@@ -12,6 +12,9 @@ from calibre_plugins.shelf_bridge.ui.qt import (
 )
 from calibre_plugins.shelf_bridge.prefs import prefs
 from calibre_plugins.shelf_bridge.auth import credential_store
+from calibre_plugins.shelf_bridge import oauth_apps
+
+_OPTIONAL_HINT = "Optional — leave blank to use the built-in app"
 
 
 class _BasePanel(QWidget):
@@ -93,6 +96,9 @@ class GoogleSheetsPanel(_BasePanel):
         self.client_secret = self._password_field()
         self.spreadsheet_id = QLineEdit()
         self.sheet_name = QLineEdit()
+        if oauth_apps.has_bundled_google():
+            self.client_id.setPlaceholderText(_OPTIONAL_HINT)
+            self.client_secret.setPlaceholderText(_OPTIONAL_HINT)
         self.form.addRow("OAuth Client ID:", self.client_id)
         self.form.addRow("OAuth Client Secret:", self.client_secret)
         self.form.addRow("Spreadsheet ID:", self.spreadsheet_id)
@@ -133,7 +139,9 @@ class GoogleSheetsPanel(_BasePanel):
         self.save()
         from calibre_plugins.shelf_bridge.ui.device_auth import run_google_device_auth
         ok, msg = run_google_device_auth(
-            self, self.client_id.text().strip(), self.client_secret.text().strip())
+            self,
+            oauth_apps.google_client_id(self.client_id.text()),
+            oauth_apps.google_client_secret(self.client_secret.text()))
         (QMessageBox.information if ok else QMessageBox.warning)(self, "Google Sheets Authorization", msg)
         self._refresh_status()
 
@@ -149,6 +157,8 @@ class OneDrivePanel(_BasePanel):
     def build(self):
         self.client_id = QLineEdit()
         self.path = QLineEdit()
+        if oauth_apps.has_bundled_onedrive():
+            self.client_id.setPlaceholderText(_OPTIONAL_HINT)
         self.form.addRow("Client ID:", self.client_id)
         self.form.addRow("OneDrive path (.csv):", self.path)
         self.status = QLabel()
@@ -182,7 +192,7 @@ class OneDrivePanel(_BasePanel):
     def _authorize(self):
         self.save()
         from calibre_plugins.shelf_bridge.ui.device_auth import run_device_auth
-        ok, msg = run_device_auth(self, self.client_id.text().strip())
+        ok, msg = run_device_auth(self, oauth_apps.onedrive_client_id(self.client_id.text()))
         (QMessageBox.information if ok else QMessageBox.warning)(self, "OneDrive Authorization", msg)
         self._refresh_status()
 

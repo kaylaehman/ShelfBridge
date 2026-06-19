@@ -17,6 +17,7 @@ from calibre_plugins.shelf_bridge.adapters.base import BaseServiceAdapter, Expor
 from calibre_plugins.shelf_bridge.adapters.csv_schema import GOODREADS_COLUMNS, goodreads_row
 from calibre_plugins.shelf_bridge.adapters.http import request_with_retry
 from calibre_plugins.shelf_bridge.auth.graph_token import get_valid_token, AuthExpiredError
+from calibre_plugins.shelf_bridge import oauth_apps
 
 GRAPH_BASE = "https://graph.microsoft.com/v1.0"
 _SAFE_PATH = re.compile(r"^[\w/.\- ]+\.csv$")
@@ -41,6 +42,10 @@ class OneDriveAdapter(BaseServiceAdapter):
     display_name = "OneDrive (CSV)"
     requires_auth = True
 
+    def _client_id(self):
+        # User's own client ID wins; otherwise the bundled shared app (if any).
+        return oauth_apps.onedrive_client_id(self.prefs.get("onedrive_client_id", ""))
+
     def _remote_path(self):
         return self.prefs.get("onedrive_path", "/Calibre/catalog.csv").lstrip("/")
 
@@ -52,7 +57,7 @@ class OneDriveAdapter(BaseServiceAdapter):
         return buf.getvalue().encode("utf-8-sig")
 
     def export(self, books, field_map):
-        client_id = self.prefs.get("onedrive_client_id", "")
+        client_id = self._client_id()
         remote_path = self._remote_path()
         try:
             access_token = get_valid_token(client_id, self.prefs)
@@ -125,7 +130,7 @@ class OneDriveAdapter(BaseServiceAdapter):
     def validate_prefs(self):
         from calibre_plugins.shelf_bridge.auth import credential_store
         errors = []
-        if not self.prefs.get("onedrive_client_id"):
+        if not self._client_id():
             errors.append("OneDrive Client ID is required.")
         if not credential_store.get_secret("onedrive_token", self.prefs):
             errors.append("OneDrive is not authorized. Click 'Authorize' in settings.")
@@ -140,7 +145,7 @@ class OneDriveAdapter(BaseServiceAdapter):
 
     def test_connection(self):
         try:
-            client_id = self.prefs.get("onedrive_client_id", "")
+            client_id = self._client_id()
             token = get_valid_token(client_id, self.prefs)
             req = urllib.request.Request(
                 f"{GRAPH_BASE}/me/drive",

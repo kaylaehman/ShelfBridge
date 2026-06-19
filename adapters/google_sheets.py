@@ -18,6 +18,7 @@ from calibre_plugins.shelf_bridge.adapters.base import BaseServiceAdapter, Expor
 from calibre_plugins.shelf_bridge.adapters.csv_schema import GOODREADS_COLUMNS, goodreads_row
 from calibre_plugins.shelf_bridge.adapters.http import request_with_retry
 from calibre_plugins.shelf_bridge.auth.google_token import get_valid_token, AuthExpiredError
+from calibre_plugins.shelf_bridge import oauth_apps
 
 SHEETS_API = "https://sheets.googleapis.com/v4/spreadsheets"
 
@@ -40,6 +41,12 @@ class GoogleSheetsAdapter(BaseServiceAdapter):
     def _sheet_name(self):
         return self.prefs.get("google_sheet_name", "Books") or "Books"
 
+    def _client_id(self):
+        return oauth_apps.google_client_id(self.prefs.get("google_client_id", ""))
+
+    def _client_secret(self):
+        return oauth_apps.google_client_secret(self.prefs.get("google_client_secret", ""))
+
     def _request(self, method, url, token, payload=None):
         data = json.dumps(payload).encode() if payload is not None else None
         req = urllib.request.Request(
@@ -61,8 +68,8 @@ class GoogleSheetsAdapter(BaseServiceAdapter):
 
     def export(self, books, field_map):
         sheet_id = self.prefs.get("google_spreadsheet_id", "")
-        client_id = self.prefs.get("google_client_id", "")
-        client_secret = self.prefs.get("google_client_secret", "")
+        client_id = self._client_id()
+        client_secret = self._client_secret()
         try:
             token = get_valid_token(client_id, client_secret, self.prefs)
         except AuthExpiredError as e:
@@ -95,9 +102,9 @@ class GoogleSheetsAdapter(BaseServiceAdapter):
     def validate_prefs(self):
         from calibre_plugins.shelf_bridge.auth import credential_store
         errors = []
-        if not self.prefs.get("google_client_id"):
+        if not self._client_id():
             errors.append("Google Client ID is required.")
-        if not self.prefs.get("google_client_secret"):
+        if not self._client_secret():
             errors.append("Google Client Secret is required.")
         if not self.prefs.get("google_spreadsheet_id"):
             errors.append("Google Spreadsheet ID is required.")
@@ -108,11 +115,7 @@ class GoogleSheetsAdapter(BaseServiceAdapter):
     def test_connection(self):
         try:
             sheet_id = self.prefs.get("google_spreadsheet_id", "")
-            token = get_valid_token(
-                self.prefs.get("google_client_id", ""),
-                self.prefs.get("google_client_secret", ""),
-                self.prefs,
-            )
+            token = get_valid_token(self._client_id(), self._client_secret(), self.prefs)
             info = self._request(
                 "GET", f"{SHEETS_API}/{sheet_id}?fields=properties.title", token)
             title = info.get("properties", {}).get("title", "spreadsheet")

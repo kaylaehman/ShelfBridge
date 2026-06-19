@@ -3,6 +3,7 @@
 CLAUDE.md
 AGENTS.md
 RULES.md
+TODO.md
 docs/superpowers/
 .remember/
 
@@ -25,3 +26,4 @@ ruvector.db
 # Dev-only Calibre smoke scripts (not part of the plugin)
 smoke_test.py
 config_smoke.py
+config_shot.py

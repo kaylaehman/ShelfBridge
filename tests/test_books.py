@@ -87,4 +87,28 @@ def test_read_dates_and_untitled_fallback():
     books = extract_books(_db())
     assert books[0]["read_dates"] == ["2023-05-01"]
     assert books[1]["title"] == "Untitled"
+
+
+def test_extract_books_uses_bulk_field_read():
+    """When the DB exposes all_field_for, custom columns are read in bulk
+    (one query per field) and per-book field_for is never called. (PERF fix)"""
+    from calibre_plugins.shelf_bridge.books import extract_books
+    calls = {"all": 0}
+
+    class BulkDb(MockDb):
+        def all_field_for(self, field, ids):
+            calls["all"] += 1
+            if field == "#read_date":
+                return {1: datetime.date(2023, 5, 1)}
+            return {bid: None for bid in ids}
+
+        def field_for(self, col, bid):  # must NOT be called on the bulk path
+            raise AssertionError("per-book field_for called despite all_field_for")
+
+    db = BulkDb({1: _Meta(title="x", authors=["A"]), 2: _Meta(title="y", authors=[])})
+    books = extract_books(db)
+    # field_metadata exposes 2 custom fields -> 2 bulk queries, 0 per-book reads
+    assert calls["all"] == 2
+    assert books[0]["read_dates"] == ["2023-05-01"]
+    assert books[1]["read_dates"] == []
     assert books[1]["read_dates"] == []

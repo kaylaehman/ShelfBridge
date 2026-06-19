@@ -36,6 +36,10 @@ CSV, a Google Sheet, or a CSV uploaded to Microsoft OneDrive.
 - **Automation** — export automatically when your library changes, or on a
   schedule (every 15 min through daily).
 
+## Screenshot
+
+![ShelfBridge configuration dialog](docs/config-dialog.png)
+
 ## Installation
 
 Download the latest `shelf_bridge.zip` from the
