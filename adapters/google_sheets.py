@@ -4,7 +4,8 @@ Writes the library to a Google Sheet via the Sheets API v4. Re-exports are
 idempotent: the target sheet is cleared, then the header + all rows are written
 fresh (so a scheduled export never appends duplicates).
 
-Rows reuse the shared Goodreads column schema for a consistent, readable layout.
+Rows are built from the user-configured columns (``columns.resolve_columns`` /
+``columns.build_rows``), so the sheet's columns/order/headers are configurable.
 All HTTP goes through :meth:`_request` (the single seam tests stub) and is
 wrapped in ``request_with_retry`` for 429/5xx backoff.
 """

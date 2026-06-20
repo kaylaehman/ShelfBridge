@@ -1,7 +1,7 @@
 """OneDrive adapter — uploads the CSV via Microsoft Graph.
 
-OneDrive is a transport, not a schema: it builds the CSV from the shared
-``csv_schema`` (not by reaching into the Goodreads adapter) and uploads it with
+OneDrive is a transport, not a schema: it builds the CSV from the user-configured
+columns (``columns.resolve_columns`` / ``columns.build_rows``) and uploads it with
 a simple PUT (<4 MB) or a resumable upload session (>=4 MB).
 """
 import csv
