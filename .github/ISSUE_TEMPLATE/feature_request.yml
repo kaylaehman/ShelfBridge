@@ -1,0 +1,45 @@
+name: Feature request
+description: Suggest an idea or improvement for ShelfBridge
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve ShelfBridge! Please search existing issues first
+        in case it's already been requested.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: What are you trying to do that ShelfBridge can't do today?
+      placeholder: e.g. I want each book's full read history exported, not just the latest date.
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: How would you like it to work? (A column option, a new setting, etc.)
+    validations:
+      required: false
+  - type: dropdown
+    id: service
+    attributes:
+      label: Which service(s) does this affect?
+      multiple: true
+      options:
+        - Goodreads / StoryGraph (CSV)
+        - Google Sheets
+        - OneDrive
+        - Export scope / columns
+        - Automation
+        - General / not service-specific
+    validations:
+      required: false
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Anything else — examples, mock-ups, links, or how you'd use it.
+    validations:
+      required: false

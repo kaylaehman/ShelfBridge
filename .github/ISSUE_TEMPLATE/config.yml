@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions & general discussion (MobileRead)
+    url: https://www.mobileread.com/forums/showthread.php?t=374017
+    about: For setup help, usage questions, or general chat, post in the ShelfBridge thread on MobileRead.
+  - name: Setup guides (README)
+    url: https://github.com/kaylaehman/ShelfBridge#readme
+    about: OneDrive and Google Sheets OAuth setup instructions.

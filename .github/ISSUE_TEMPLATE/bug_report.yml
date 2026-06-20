@@ -1,0 +1,60 @@
+name: Bug report
+description: Report something that isn't working
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Please include versions and steps so it can be reproduced.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What went wrong, and what did you expect instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open Configure Services…
+        2. Set up Google Sheets
+        3. Click Export
+        4. See error
+    validations:
+      required: true
+  - type: input
+    id: sb-version
+    attributes:
+      label: ShelfBridge version
+      placeholder: e.g. 0.1.1
+    validations:
+      required: true
+  - type: input
+    id: calibre-version
+    attributes:
+      label: Calibre version
+      placeholder: e.g. 7.16 or 9.9
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Windows
+        - macOS
+        - Linux
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / error output
+      description: >
+        Run Calibre from a terminal with `calibre-debug -g` to capture errors, and
+        paste any ShelfBridge output here. This will be automatically formatted as code.
+      render: shell
+    validations:
+      required: false
