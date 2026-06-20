@@ -3,7 +3,10 @@
 Differences from the original sketch:
 - ``services_override`` lets callers (the agent) pass a service list directly
   instead of mutating the shared ``prefs`` singleton. (review M1/I3)
-- Field mapping is applied here, once, before each adapter. (review I1)
+- Export scope (whole library vs. a virtual library) is resolved via
+  ``export_scope.resolve_search``; column selection is controlled by
+  ``export_columns`` in prefs and applied inside the Sheets/OneDrive adapters,
+  so adapters here receive the raw book list.
 - The persisted ``_last_export_summary`` is scrubbed of token-like strings and
   truncated so credentials / API noise do not land in the prefs file. (review M3)
 """
