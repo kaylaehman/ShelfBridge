@@ -29,3 +29,7 @@ config_smoke.py
 config_shot.py
 config_entry_smoke.py
 probe_api.py
+
+# Ruflo / claude-flow agent scratch
+.claude-flow/
+.superpowers/
