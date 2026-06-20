@@ -108,21 +108,6 @@ def test_end_to_end_goodreads_export_writes_correct_csv():
     out.unlink()
 
 
-def test_end_to_end_field_map_renames_before_adapter():
-    """A field_map remaps title -> a new key; adapter still produces a valid CSV."""
-    er = _runner_force_fallback()
-    out = pathlib.Path(tempfile.gettempdir()) / "sb_itest_fieldmap.csv"
-    er.prefs.clear()
-    er.prefs.update({
-        "export_all": True,
-        "enabled_services": ["goodreads"],
-        "field_maps": {"goodreads": {"publisher": "Publisher_override"}},
-        "goodreads_output_path": str(out),
-    })
-    summary = er.run_export_headless(MockDb(), reason="itest")
-    assert summary["results"]["goodreads"]["success"] is True
-    out.unlink(missing_ok=True)
-
 
 def test_end_to_end_google_sheets_via_runner(monkeypatch):
     """Drive Google Sheets through run_export_headless with a stubbed network seam."""
@@ -171,7 +156,7 @@ def test_end_to_end_google_sheets_via_runner(monkeypatch):
 
 def test_all_non_qt_modules_import():
     mods = [
-        "books", "prefs", "field_mapping",
+        "books", "prefs", "columns", "export_scope",
         "adapters", "adapters.base", "adapters.csv_schema", "adapters.goodreads",
         "adapters.storygraph", "adapters.http",
         "adapters.google_sheets", "adapters.onedrive",
