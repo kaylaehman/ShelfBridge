@@ -99,15 +99,26 @@ def test_google_sheets_validate_prefs():
     assert any("not authorized" in e for e in errs)
 
 
-def test_google_sheets_rows_header_and_values():
+def test_google_sheets_rows_use_configured_columns():
     from calibre_plugins.shelf_bridge.adapters.google_sheets import GoogleSheetsAdapter
-    from calibre_plugins.shelf_bridge.adapters.csv_schema import GOODREADS_COLUMNS
-    rows = GoogleSheetsAdapter({})._rows([
-        {"calibre_id": 1, "title": "Dune", "authors": ["Herbert, Frank"], "rating": 8},
-    ])
-    assert rows[0] == list(GOODREADS_COLUMNS)         # header row
-    assert rows[1][0] == "Dune"                        # Title column value
-    assert len(rows[1]) == len(GOODREADS_COLUMNS)
+    adapter = GoogleSheetsAdapter({"export_columns": [
+        {"field": "title", "header": "Title", "enabled": True},
+        {"field": "rating", "header": "Stars", "enabled": True},
+    ]})
+    rows = adapter._rows([{"title": "Dune", "rating": 8}])
+    assert rows[0] == ["Title", "Stars"]
+    assert rows[1] == ["Dune", "4"]
+
+
+def test_onedrive_csv_uses_configured_columns():
+    from calibre_plugins.shelf_bridge.adapters.onedrive import OneDriveAdapter
+    a = OneDriveAdapter({"export_columns": [
+        {"field": "title", "header": "Title", "enabled": True},
+    ]})
+    data = a._build_csv_bytes([{"title": "Dune"}]).decode("utf-8-sig")
+    lines = [ln for ln in data.splitlines() if ln]
+    assert lines[0] == "Title"
+    assert lines[1] == "Dune"
 
 
 def test_google_sheets_clear_then_write(monkeypatch):

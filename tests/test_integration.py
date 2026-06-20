@@ -163,7 +163,8 @@ def test_end_to_end_google_sheets_via_runner(monkeypatch):
     # clear (POST) then write (PUT); write payload carries header + 3 book rows.
     assert [m for m, _ in calls] == ["POST", "PUT"]
     write_payload = calls[1][1]
-    assert len(write_payload["values"]) == 4   # header + 3 books
+    assert write_payload["values"][0][0] == "Title"     # header row, first col
+    assert len(write_payload["values"]) == 4            # header + 3 books
 
 
 # ── Import-graph smoke test (non-Qt modules) ─────────────────────────────────

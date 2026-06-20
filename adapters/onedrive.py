@@ -14,7 +14,7 @@ import urllib.parse
 import urllib.error
 
 from calibre_plugins.shelf_bridge.adapters.base import BaseServiceAdapter, ExportResult
-from calibre_plugins.shelf_bridge.adapters.csv_schema import GOODREADS_COLUMNS, goodreads_row
+from calibre_plugins.shelf_bridge.columns import resolve_columns, build_rows
 from calibre_plugins.shelf_bridge.adapters.http import request_with_retry
 from calibre_plugins.shelf_bridge.auth.graph_token import get_valid_token, AuthExpiredError
 from calibre_plugins.shelf_bridge import oauth_apps
@@ -50,10 +50,11 @@ class OneDriveAdapter(BaseServiceAdapter):
         return self.prefs.get("onedrive_path", "/Calibre/catalog.csv").lstrip("/")
 
     def _build_csv_bytes(self, books):
+        custom = (books[0].get("custom_columns") if books else None) or {}
+        rows = build_rows(books, resolve_columns(self.prefs, custom))
         buf = io.StringIO()
-        writer = csv.DictWriter(buf, fieldnames=GOODREADS_COLUMNS)
-        writer.writeheader()
-        writer.writerows(goodreads_row(b) for b in books)
+        writer = csv.writer(buf)
+        writer.writerows(rows)
         return buf.getvalue().encode("utf-8-sig")
 
     def export(self, books, field_map):

@@ -15,7 +15,7 @@ import urllib.parse
 import urllib.error
 
 from calibre_plugins.shelf_bridge.adapters.base import BaseServiceAdapter, ExportResult
-from calibre_plugins.shelf_bridge.adapters.csv_schema import GOODREADS_COLUMNS, goodreads_row
+from calibre_plugins.shelf_bridge.columns import resolve_columns, build_rows
 from calibre_plugins.shelf_bridge.adapters.http import request_with_retry
 from calibre_plugins.shelf_bridge.auth.google_token import get_valid_token, AuthExpiredError
 from calibre_plugins.shelf_bridge import oauth_apps
@@ -60,11 +60,9 @@ class GoogleSheetsAdapter(BaseServiceAdapter):
         return request_with_retry(do)
 
     def _rows(self, books):
-        values = [list(GOODREADS_COLUMNS)]
-        for b in books:
-            row = goodreads_row(b)
-            values.append([row[c] for c in GOODREADS_COLUMNS])
-        return values
+        custom = (books[0].get("custom_columns") if books else None) or {}
+        cols = resolve_columns(self.prefs, custom)
+        return build_rows(books, cols)
 
     def export(self, books, field_map):
         sheet_id = self.prefs.get("google_spreadsheet_id", "")
