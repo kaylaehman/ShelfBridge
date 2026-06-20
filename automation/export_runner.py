@@ -11,7 +11,7 @@ import re
 
 from calibre_plugins.shelf_bridge.books import extract_books
 from calibre_plugins.shelf_bridge.adapters import get_adapter
-from calibre_plugins.shelf_bridge.field_mapping import apply_field_map
+from calibre_plugins.shelf_bridge.export_scope import resolve_search, ExportScopeError
 from calibre_plugins.shelf_bridge.prefs import prefs
 
 try:
@@ -40,12 +40,19 @@ def run_export_headless(db, reason="manual", services_override=None):
 
     Returns a summary dict for logging / agent reporting.
     """
-    search = "" if prefs.get("export_all", True) else prefs.get("export_filter", "")
-    books = extract_books(db, search)
     if services_override is not None:
         services = services_override
     else:
         services = prefs.get("enabled_services", [])
+    try:
+        search = resolve_search(db, prefs)
+    except ExportScopeError as e:
+        summary = {"trigger": reason, "total_books": 0,
+                   "results": {svc: {"success": False, "errors": [str(e)]}
+                               for svc in services}}
+        prefs["_last_export_summary"] = _scrub_summary(summary)
+        return summary
+    books = extract_books(db, search)
     field_maps = prefs.get("field_maps", {})
 
     summary = {"trigger": reason, "total_books": len(books), "results": {}}
@@ -62,8 +69,7 @@ def run_export_headless(db, reason="manual", services_override=None):
             summary["results"][svc_id] = {"skipped": True, "reason": errors}
             continue
         try:
-            mapped = apply_field_map(books, field_maps.get(svc_id, {}))
-            result = adapter.export(mapped, field_maps.get(svc_id, {}))
+            result = adapter.export(books, field_maps.get(svc_id, {}))
             summary["results"][svc_id] = {
                 "success": result.success,
                 "records_exported": result.records_exported,

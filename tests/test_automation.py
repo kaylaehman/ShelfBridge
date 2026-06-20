@@ -14,6 +14,10 @@ class MockDb:
     def __init__(self, ids=()):
         self._ids = list(ids)
         self.field_metadata = _FieldMeta()
+        self.new_api = self
+
+    def pref(self, key, default=None):
+        return default
 
     def all_book_ids(self):
         return self._ids
@@ -82,6 +86,21 @@ def _has_qt():
         except ImportError:
             return False
 
+
+def test_missing_virtual_library_reports_error_per_service():
+    er = _runner_with_prefs({
+        "export_mode": "virtual_library",
+        "export_virtual_library": "Ghost",
+        "field_maps": {},
+    })
+    # MockDb has no virtual_libraries -> resolve_search raises
+    summary = er.run_export_headless(MockDb(), reason="test",
+                                     services_override=["goodreads"])
+    assert summary["results"]["goodreads"]["success"] is False
+    assert any("Ghost" in e for e in summary["results"]["goodreads"]["errors"])
+
+
+# ── Trigger (Qt) ─────────────────────────────────────────────────────────────
 
 @pytest.mark.skipif(not _has_qt(), reason="PyQt not available")
 def test_debounce_prevents_double_export():

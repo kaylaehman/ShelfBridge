@@ -13,8 +13,9 @@ prefs = JSONConfig("plugins/shelf_bridge")
 prefs.defaults = {
     # ── Global ────────────────────────────────────────────────────────────
     "default_service": "goodreads",
-    "export_all": True,
-    "export_filter": "",            # Calibre search string if export_all=False
+    "export_mode": "all",                 # "all" | "virtual_library"
+    "export_virtual_library": "",         # VL name when export_mode == "virtual_library"
+    "export_columns": [],                 # ordered [{field, header, enabled}]; [] = default set
 
     # ── Goodreads / StoryGraph ────────────────────────────────────────────
     "goodreads_output_path": "",
