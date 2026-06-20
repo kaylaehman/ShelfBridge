@@ -11,7 +11,7 @@ try:  # Calibre exposes PyQt5.Qt (classes may actually be PyQt6)
     from PyQt5.Qt import (  # noqa: F401
         Qt, QApplication, QDialog, QWidget, QTabWidget,
         QVBoxLayout, QHBoxLayout, QFormLayout, QGridLayout,
-        QLabel, QPushButton, QLineEdit, QCheckBox, QSpinBox, QComboBox,
+        QLabel, QPushButton, QLineEdit, QCheckBox, QRadioButton, QSpinBox, QComboBox,
         QListWidget, QListWidgetItem, QTextEdit, QPlainTextEdit,
         QFileDialog, QMessageBox, QTableWidget, QTableWidgetItem,
         QDialogButtonBox, QGroupBox, QMenu, QThread, pyqtSignal,
@@ -21,7 +21,7 @@ except ImportError:  # pure PyQt6
     from PyQt6.QtWidgets import (  # noqa: F401
         QApplication, QDialog, QWidget, QTabWidget,
         QVBoxLayout, QHBoxLayout, QFormLayout, QGridLayout,
-        QLabel, QPushButton, QLineEdit, QCheckBox, QSpinBox, QComboBox,
+        QLabel, QPushButton, QLineEdit, QCheckBox, QRadioButton, QSpinBox, QComboBox,
         QListWidget, QListWidgetItem, QTextEdit, QPlainTextEdit,
         QFileDialog, QMessageBox, QTableWidget, QTableWidgetItem,
         QDialogButtonBox, QGroupBox, QMenu,

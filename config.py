@@ -10,7 +10,7 @@ from calibre_plugins.shelf_bridge.ui.qt import (
 )
 from calibre_plugins.shelf_bridge.ui.service_config import ALL_PANELS
 from calibre_plugins.shelf_bridge.ui.automation_config import AutomationPanel
-from calibre_plugins.shelf_bridge.ui.field_mapping import FieldMappingPanel
+from calibre_plugins.shelf_bridge.ui.export_config import ExportPanel
 
 
 class ConfigWidget(QWidget):
@@ -34,9 +34,9 @@ class ConfigWidget(QWidget):
         self.tabs.addTab(self.automation, "Automation")
         self._panels.append(self.automation)
 
-        self.mapping = FieldMappingPanel()
-        self.tabs.addTab(self.mapping, "Field Mapping")
-        self._panels.append(self.mapping)
+        self.export_panel = ExportPanel(gui)
+        self.tabs.addTab(self.export_panel, self.export_panel.title)
+        self._panels.append(self.export_panel)
 
     def save_settings(self):
         for panel in self._panels:
