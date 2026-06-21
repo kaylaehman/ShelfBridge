@@ -32,7 +32,7 @@ class _AutoExportThread(QThread):
 
 class ShelfBridgeAction(InterfaceAction):
     name = 'ShelfBridge'
-    action_spec = ('Export Catalog', None,
+    action_spec = ('ShelfBridge', None,
                    'Export library to a reading service', 'Ctrl+Shift+E')
 
     def genesis(self):
