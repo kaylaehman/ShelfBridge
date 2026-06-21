@@ -49,7 +49,7 @@ class ShelfBridgePlugin(InterfaceActionBase):
     description = 'Export your Calibre library to reading-tracker services'
     supported_platforms = ['windows', 'osx', 'linux']
     author = 'Kayla Ehman'
-    version = (0, 1, 1)
+    version = (0, 1, 2)
     minimum_calibre_version = (6, 0, 0)
     actual_plugin = 'calibre_plugins.shelf_bridge.main:ShelfBridgeAction'
 
