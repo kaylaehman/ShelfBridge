@@ -4,6 +4,9 @@
 
 # ShelfBridge
 
+[![Sponsor](https://img.shields.io/badge/Sponsor-GitHub%20Sponsors-ec6cb9?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/kaylaehman)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+
 A [Calibre](https://calibre-ebook.com/) desktop plugin that exports your book
 catalog to reading-tracker and productivity services — a Goodreads / StoryGraph
 CSV, a Google Sheet, or a CSV uploaded to Microsoft OneDrive.
@@ -170,6 +173,12 @@ See [SECURITY.md](SECURITY.md) for details and how to report issues.
 ## Requirements
 
 - Calibre 6.0 or newer (PyQt5 on 6.x, PyQt6 on 7.x — both supported).
+
+## Support development
+
+ShelfBridge is free and open source. If it's useful to you, you can support its
+development through **[GitHub Sponsors](https://github.com/sponsors/kaylaehman)** —
+thank you!
 
 ## License
 
