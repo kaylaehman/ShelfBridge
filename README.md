@@ -142,6 +142,11 @@ this once.
 2. Scroll to **Advanced settings → Allow public client flows** and set it to
    **Yes**. Save.
 
+> ⚠️ **Don't skip this.** This toggle is required for the device-code sign-in.
+> If it's left **No**, Authorize fails and ShelfBridge stays **"Not authorized"**
+> (often with an `AADSTS7000218` error) — even after you've granted the
+> permissions below. It's the #1 cause of OneDrive setup problems.
+
 ### 3. Grant the Graph permissions
 
 1. Open **API permissions → Add a permission → Microsoft Graph → Delegated
